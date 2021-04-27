@@ -1,0 +1,69 @@
+// GameField has static final doubles of:
+//   INNER_TILE_WIDTH = 22.85
+//   MESH_TILE_WIDTH  =  0.80
+//   TAPE_WIDTH       =  2.00
+// and calculated value of 
+//   FIELD_WIDTH      = 141.10
+// these values can be used in delineating field markings.
+//
+// Comments must start with '// '<-- including a whitespace!
+//
+// To declare a color, use:
+//      COLOR <name> <r> <g> <b>
+// Suggest: get r,g,b values for colors from https://rgbcolorcode.com
+// Valid r,g,b values are integers from [0:255]
+// Define the colors first, then the graphical elements.
+//
+//
+// To declare a line, use:
+//      LINE <color> <width> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are endpoints of the line.
+//
+//
+// To declare a rectangle use:
+//      RECT <color> <width> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are opposite corners of the rectangle.
+//
+// To declare a filled rectangle use:
+//      FILLRECT <color> <width> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are opposite corners of the rectangle.
+//
+//
+// To declare a circle use:
+//      CIRCLE <color> <width> <x1> <y1> <diameter>
+// (x1,y1) is the center of the circle.
+//
+// To declare a filled circle use:
+//      FILLCIRCLE <color> <width> <x1> <y1> <diameter>
+// (x1,y1) is the center of the circle.
+//
+//
+// To declare a polygon use:
+//      POLYGON <color> <width> <<x1> <y1> ...>
+// (x1,y1) ... (xN, yN) are the vertices of the polygon.
+//
+// To declare a filled polygon use:
+//      FILLPOLYGON <color> <width> <<x1> <y1> ...>
+// (x1,y1) ... (xN, yN) are the vertices of the polygon.
+//
+//
+// To declare field dimensions use:
+//      FIELD <color> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are opposite corners of the rectangular field.
+//
+//
+// For LINE, RECT, the graphic extends width/2 beyond the endpoints given.
+// For CIRCLE, the graphic is diameter +/- width
+//
+//
+// Use double notation: (xx.0) not int (xx) for x, y coordinates in inches.
+// Integer notation denotes a pixel width, not a scalable dimension in inches.
+// Any whitespace delineates arguments, so do NOT do 'x + y', instead do 'x+y'
+//
+//
+// Example Declaration: this paints a vertical light blue line, 2" wide about midpint on x-axis, along two tiles adacent to y=0.
+//
+// Colors
+COLOR lightBlue  51 153 255
+// Zone Boundary (Blue)
+LINE lightBlue TAPE_WIDTH 3.0*(INNER_TILE_WIDTH+MESH_TILE_WIDTH)+TAPE_WIDTH/2.0 TAPE_WIDTH/2.0 3.0*(INNER_TILE_WIDTH+MESH_TILE_WIDTH)+TAPE_WIDTH/2.0 2.0*INNER_TILE_WIDTH+MESH_TILE_WIDTH-TAPE_WIDTH/2.0

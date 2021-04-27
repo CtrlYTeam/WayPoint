@@ -1,0 +1,72 @@
+// GameField has static final doubles of:
+//   INNER_TILE_WIDTH = 22.85
+//   MESH_TILE_WIDTH  =  0.80
+//   TAPE_WIDTH       =  2.00
+// and calculated value of 
+//   FIELD_WIDTH      = 141.10
+// these values can be used in delineating field markings.
+//
+// Comments must start with '// '<-- including a whitespace!
+//
+// To declare a color, use:
+//      COLOR <name> <r> <g> <b>
+// Suggest: get r,g,b values for colors from https://rgbcolorcode.com
+// Valid r,g,b values are integers from [0:255]
+// Define the colors first, then the graphical elements.
+//
+// To declare a line, use:
+//      LINE <color> <width> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are endpoints of the line.
+//
+// To declare a rectangle use:
+//      RECT <color> <width> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are opposite corners of the rectangle.
+//
+// To declare a circle use:
+//      CIRCLE <color> <width> <x1> <y1> <diameter>
+// (x1,y1) is the center of the circle.
+//
+// To declare field dimensions use:
+//      FIELD <color> <x1> <y1> <x2> <y2>
+// (x1,y1) and (x2,y2) are opposite corners of the rectangle.
+//
+// For LINE, RECT, the graphic extends width/2 beyond the endpoints given.
+// For CIRCLE, the graphic is diameter +/- width
+//
+// Use double notation: (xx.0) not int (xx).
+// Any whitespace delineates arguments, so do NOT do 'x + y', instead do 'x+y'
+
+// -------- Ultimate Goal Remote Field: Blue ------------
+//
+// Colors
+COLOR lightBlue  51 153 255
+COLOR orange    255 165   0
+COLOR white     255 255 255
+COLOR black       0   0   0
+
+// Launch Line
+LINE white TAPE_WIDTH TAPE_WIDTH/2.0 81.0 4.0*INNER_TILE_WIDTH+3.0*MESH_TILE_WIDTH-TAPE_WIDTH/2.0 81.0
+ 
+// Target Square "C"
+RECT lightBlue TAPE_WIDTH TAPE_WIDTH/2.0 FIELD_WIDTH-TAPE_WIDTH/2.0 INNER_TILE_WIDTH-TAPE_WIDTH/2.0 FIELD_WIDTH-INNER_TILE_WIDTH+TAPE_WIDTH/2.0
+
+// Target Square "B"
+RECT lightBlue TAPE_WIDTH INNER_TILE_WIDTH+MESH_TILE_WIDTH+TAPE_WIDTH/2.0 FIELD_WIDTH-INNER_TILE_WIDTH-MESH_TILE_WIDTH-TAPE_WIDTH/2.0 2.0*INNER_TILE_WIDTH+MESH_TILE_WIDTH-TAPE_WIDTH/2.0 FIELD_WIDTH-2.0*INNER_TILE_WIDTH-MESH_TILE_WIDTH+TAPE_WIDTH/2.0
+
+// Target Square "A"
+RECT lightBlue TAPE_WIDTH TAPE_WIDTH/2.0 FIELD_WIDTH-2.0*INNER_TILE_WIDTH-2.0*MESH_TILE_WIDTH-TAPE_WIDTH/2.0 INNER_TILE_WIDTH-TAPE_WIDTH/2.0 FIELD_WIDTH-3.0*INNER_TILE_WIDTH-2.0*MESH_TILE_WIDTH+TAPE_WIDTH/2.0
+
+// Wobble Goal Marker (left)
+LINE lightBlue TAPE_WIDTH INNER_TILE_WIDTH-TAPE_WIDTH/2.0 TAPE_WIDTH/2.0 INNER_TILE_WIDTH-TAPE_WIDTH/2.0 INNER_TILE_WIDTH-TAPE_WIDTH/2.0
+
+// Wobble Goal Marker (right)
+LINE lightBlue TAPE_WIDTH 2.0*INNER_TILE_WIDTH+MESH_TILE_WIDTH-TAPE_WIDTH/2.0 TAPE_WIDTH/2.0 2.0*INNER_TILE_WIDTH+MESH_TILE_WIDTH-TAPE_WIDTH/2.0 INNER_TILE_WIDTH-TAPE_WIDTH/2.0
+
+// Ring Stack Marker
+LINE lightBlue TAPE_WIDTH 34.0+TAPE_WIDTH/2.0 2.0*INNER_TILE_WIDTH+2.0*MESH_TILE_WIDTH+TAPE_WIDTH/2.0  34.0+TAPE_WIDTH/2.0 2.0*INNER_TILE_WIDTH+2.0*MESH_TILE_WIDTH+TAPE_WIDTH/2.0
+
+// Ring Stack
+CIRCLE orange 1.0 34.0+TAPE_WIDTH/2.0 2.0*INNER_TILE_WIDTH+2.0*MESH_TILE_WIDTH+TAPE_WIDTH/2.0 4.5
+
+// Field Delimeter
+FIELD black 0.0 0.0 4.0*INNER_TILE_WIDTH+3.0*MESH_TILE_WIDTH FIELD_WIDTH 

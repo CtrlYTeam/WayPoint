@@ -1,0 +1,18 @@
+//      - X +     
+//       ___     _ 
+// +  \\|   |// |
+// Y    |   |   |FRONT_TO BACK is outside edge of wheel to outside edge of wheel
+// -  //|___|\\ |_
+//    |-------|  
+//     SIDE_TO_SIDE is outer wheel edge to outer wheel edge
+// 
+// ORIGIN_X_OFFSET = how much to offset the Path relative to the center of the robot in X-direction 
+// ORIGIN_Y_OFFSET = how much to offest the Path relative to the center of the robot in Y-direction
+//
+SIDE_TO_SIDE    15.0
+FRONT_TO_BACK   17.0
+WHEEL_DIAMETER   3.78
+WHEEL_WIDTH      1.50
+// This offset (8.5, -7.5) puts the path origin in the lower-right corner of the robot in the given image
+ORIGIN_X_OFFSET  7.5
+ORIGIN_Y_OFFSET -8.5

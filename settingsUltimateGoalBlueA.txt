@@ -1,0 +1,9 @@
+FIELD_FILE          UltimateGoalBlueField.txt
+ROBOT_FILE          UltimateGoalRobot.txt
+NAVPOINT_INFILE     nptUGBlueA.txt
+NAVPOINT_OUTFILE    nptUGBlueA.txt
+PATH_OUTFILE        path.txt
+CALC_ALLOW_WAYPOINT_REVERSALS   true
+SIM_UNITTIME        50.0
+SIM_PERTURBATION    0.1
+SIM_NAVPOINTFILE    sim.txt
