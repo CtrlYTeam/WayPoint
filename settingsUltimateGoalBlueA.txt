@@ -1,4 +1,4 @@
-FIELD_FILE          UltimateGoalBlueField.txt
+FIELD_FILE          UltimateGoalBlueAField.txt
 ROBOT_FILE          UltimateGoalRobot.txt
 NAVPOINT_INFILE     nptUGBlueA.txt
 NAVPOINT_OUTFILE    nptUGBlueA.txt
