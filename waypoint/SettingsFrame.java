@@ -84,6 +84,12 @@ public class SettingsFrame extends JFrame {
             return; 
         }
         
+        // Some parameters may not be in the settings file. If the following parameters
+        // are not in the settings file, they are assigned default values.
+        //if (!parameters.containsKey("SCALE")) {
+        //    parameters.put("SCALE", "5.0");
+        //}
+        
         Dimension tfSize = new Dimension(200, 25);
         
         JPanel settingsPanel = new JPanel();

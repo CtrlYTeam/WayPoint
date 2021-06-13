@@ -2,10 +2,12 @@ package waypoint;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.awt.Toolkit;
 
 import javax.swing.JPanel;
 
@@ -21,7 +23,7 @@ public class DrawField extends JPanel {
 
     private GameField gf;
     
-    private static final double SCALE        = 5.0;                    // pixels per inch
+    private double SCALE; // default was 5.0 pixels per inch, now is scaled to display running app
     private static final double BORDER_WIDTH = 3.0;                    // border around field for panel display
     
     private int FIELD_PIXEL_ORIGIN_X;  // field origin in pixels, offset from 0,0 in inches
@@ -40,6 +42,17 @@ public class DrawField extends JPanel {
      * Set field panel dimensions based on GameField settings.
      */
     public void setFieldPanelDimensions() {
+    
+        // Find SCALE that is display-appropriate for this app
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double availableHeight = (double)(screenSize.getHeight()) - 300.0 - 50.0; // 300 pixels for user panel, 50 pixels for OS toolbars
+        //SCALE = availableHeight / (gf.FIELD_WIDTH_Y+2.0*BORDER_WIDTH);
+        SCALE = (double)((int) (availableHeight / (gf.FIELD_WIDTH_Y+2.0*BORDER_WIDTH)));
+        //SCALE = 5.0;
+        System.out.println("FIELD_WIDTH_Y="+gf.FIELD_WIDTH_Y);
+        System.out.println("SCALE="+SCALE);
+    
+        // Set field dimensions scaled according to available display size
         FIELD_PIXEL_ORIGIN_X = (int)(gf.FIELD_ORIGIN_X*SCALE);
         FIELD_PIXEL_ORIGIN_Y = (int)(gf.FIELD_ORIGIN_Y*SCALE);
         FIELD_PIXEL_SIZE_X   = (int)(gf.FIELD_WIDTH_X *SCALE);
@@ -584,5 +597,6 @@ public class DrawField extends JPanel {
     
     public DrawField(GameField me) {
         this.gf = me;
+        //this.SCALE = Double.parseDouble(gf.mySettings.parameters.get("SCALE"));
     }
 }

@@ -19,6 +19,7 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -76,7 +77,7 @@ public class GameField extends JFrame {
     private JButton updateB;
     protected JButton settingsB; // accessed by (SettingsFrame) mySettings
     
-    private SettingsFrame mySettings;
+    protected SettingsFrame mySettings;
     private CalcPath  calcPath;    
     private DrawField fieldPanel;
     private String[] nullArgs;
@@ -105,6 +106,7 @@ public class GameField extends JFrame {
      */
     public GameField(String[] args){
     
+        
         // This checks the command line arguments and loads
         // parameters into the SettingsFrame mySettings.
         parseArgs(args);
@@ -519,6 +521,8 @@ public class GameField extends JFrame {
         frame.pack();
         frame.setTitle(" Game Field ");
         frame.setVisible(true);
+        
+        System.out.println("FRAME HEIGHT="+frame.getHeight());
     }
     
     /**
