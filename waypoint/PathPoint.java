@@ -42,4 +42,14 @@ public class PathPoint extends NavPoint {
         this.stop = npt.stop;
         this.index = index;
     }    
+    /**
+     * Class constructor from a PathPoint.
+     */
+    public PathPoint(PathPoint ppt) {
+        this.pt = ppt.pt;
+        this.heading = ppt.heading;
+        this.stop = ppt.stop;
+        this.index = ppt.index;
+    }    
+    
 }

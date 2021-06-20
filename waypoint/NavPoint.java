@@ -25,7 +25,7 @@ public class NavPoint {
      * the same a as a given Navpoint, within tolerance of some roundoff calculation error.
      */
      public boolean isParallel(NavPoint npt) {
-        return (Math.abs(heading - npt.heading) < 0.000001);
+        return ((Math.abs(heading - npt.heading) % (2*Math.PI)) < 0.000001);
      }
     
     /** 
