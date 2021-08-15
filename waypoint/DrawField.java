@@ -36,6 +36,7 @@ public class DrawField extends JPanel {
     // https://teaching.csse.uwa.edu.au/units/CITS1001/colorinfo.html
     private static final Color lightBlue = new Color(51,153,255);
     private static final Color darkGreen = new Color(0,102,0);
+    private static final Color purple    = new Color(102,0,153);
     
 
     /**
@@ -141,27 +142,64 @@ public class DrawField extends JPanel {
 
     /**
      * Convert arc of path to graphical arc.
+     * Graphics2.draw() draws an arc from startAngle, sweeping through arcAngle degrees.
      */
-    public void graphArc(Graphics2D g2, double cx, double cy, double r, double sa, double ea, Color color) {
+    public void graphArc(Graphics2D g2, double cx, double cy, double r, double sa, double ea, boolean ccw, Color color) {
         // Rectangle is bounded by arc center +/- radius
         double x = (double)toGraphX(cx-r);
         double width  = (2.0*r*SCALE);
         double y = (double)toGraphY(cy+r);
         double height = (2.0*r*SCALE);
         double startAngle = sa;
-        double arcAngle   = ea-sa;
+        double arcAngle = 0.0;
+        // counterclockwise is a positive sweep from lower angle to higher angle
+        if (ccw) {
+            if (ea >= sa) {
+                arcAngle = ea - sa;
+            } else {
+                arcAngle = (ea + 360.0) - sa;
+            }
+            // if sweep overflows over 360 then get back into range
+            if (arcAngle > 360.0) {
+                arcAngle -= 360.0;
+            }
+        }
+        // clockwise should be a negative sweep from higher angle to lower angle
+        else if (!ccw) {
+            if (sa >= ea) {
+                arcAngle = ea - sa;
+            } else {
+                arcAngle = ea - (sa + 360.0);
+            }
+            // if sweep underflows under -2pi then get back into range
+            if (arcAngle < -360.0) {
+                arcAngle += 360.0;
+            }
+        }
         // x y width height startAngle arcAngle
         g2.setColor(color);
         g2.draw(new Arc2D.Double(x, y, width, height, startAngle, arcAngle, Arc2D.OPEN));
         //debug:
-        //System.out.println("cx:"+cx+" cy:"+cy+" r:"+r+" sa:"+sa+" ea:"+ea);
-        //System.out.println("arc:"+x+" "+y+" "+width+" "+height+" "+startAngle+" "+arcAngle);
+        System.out.println("DRAW cx:"+cx+" cy:"+cy+" r:"+r+" sa:"+sa+" ea:"+ea+ "ccw:"+ccw);
+        System.out.println("DRAW arc:"+x+" "+y+" "+width+" "+height+" "+startAngle+" "+arcAngle);
     }
 
     /**
      * Draw graphical circle from path coordinates.
+     * Thickness of circumference is NOT passed as an argument here. It must be set elsewhere.
+     * @param x     - center x coordinate
+     * @param y     - center y coordinate
+     * @param size  - diameter
+     * @param color - Color class of 3 value RGB
+     * @param fill  - true for infill, false for just circumference
      */
     public void graphCircle(Graphics g, double x, double y, double size, Color color, boolean fill) {
+        // note: origin is upperleft, so we convert from a lower-right origin with toGraph()
+        // fillOval and drawOval draw an oval inside a bounding rectangle; filled or not filled
+        // x - upperleft corner
+        // y - upperleft corner
+        // width - width of bounding rectangle
+        // height - height of bounding rectangle
         int xx = toGraphX(x-size/2.0);
         int yy = toGraphY(y+size/2.0);
         int width = (int) (size*SCALE);
@@ -300,6 +338,9 @@ public class DrawField extends JPanel {
         double rightSideX = robotx/2.0 - robotOffsetx;
         double leftSideX  = robotx/2.0 + robotOffsetx;
     
+        Color pathColor = gf.pathColors.get(gf.pathColorIndex);
+        Color lengthColor = Color.red;
+    
         // If there's nothing to draw then simply return
         if (gf.robotNavPaths == null) { return; }
     
@@ -307,11 +348,11 @@ public class DrawField extends JPanel {
             if (p instanceof Vector) {
                 Vector v = (Vector) p;
                 // robot path
-                graphLine(g, v.i.pt.x, v.i.pt.y, v.o.pt.x, v.o.pt.y, Color.blue);
+                graphLine(g, v.i.pt.x, v.i.pt.y, v.o.pt.x, v.o.pt.y, pathColor);
                 if (gf.showLength) {
                     double angle = v.heading - Math.PI/2.0;
                     graphLine(g, v.i.pt.x+rightSideX*Math.cos(angle), v.i.pt.y+rightSideX*Math.sin(angle), 
-                                 v.o.pt.x+rightSideX*Math.cos(angle), v.o.pt.y+rightSideX*Math.sin(angle), Color.red);
+                                 v.o.pt.x+rightSideX*Math.cos(angle), v.o.pt.y+rightSideX*Math.sin(angle), lengthColor);
                 }
                 
             }
@@ -319,15 +360,15 @@ public class DrawField extends JPanel {
                 Arc a = (Arc) p;
                 Color sideColor = null;
                 // path of center of robot
-                graphArc(g2, a.center.x, a.center.y, a.radius, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, Color.blue);
+                graphArc(g2, a.center.x, a.center.y, a.radius, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, !a.clockwise, pathColor);
                 if (gf.showLength) {
                     // path of right side of robot                    
                     if ((a.endAngle>a.startAngle) && (Math.abs(a.orientation) < 0.000001)) {
-                        graphArc(g2, a.center.x, a.center.y, a.radius+rightSideX, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, Color.red);                        
+                        graphArc(g2, a.center.x, a.center.y, a.radius+rightSideX, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, !a.clockwise,  lengthColor);                        
                     }
                     // path of left side of robot
                     else {
-                        graphArc(g2, a.center.x, a.center.y, a.radius+leftSideX, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, Color.red);
+                        graphArc(g2, a.center.x, a.center.y, a.radius+leftSideX, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, !a.clockwise,  lengthColor);
                     }
                 }
                 
@@ -432,19 +473,19 @@ public class DrawField extends JPanel {
                 Arc a = (Arc) p;
                 Color sideColor = null;
                 // path of center of robot
-                graphArc(g2, a.center.x, a.center.y, a.radius, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, Color.blue);
+                graphArc(g2, a.center.x, a.center.y, a.radius, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, !a.clockwise, Color.blue);
                 if (gf.showRobotTracks) {
                     // path of right side of robot                    
                     double rightSide = (a.endAngle<a.startAngle) ? -1.0 : 1.0;
                     sideColor = Color.green;
                     if (sideColor != null) {
-                        graphArc(g2, a.center.x, a.center.y, a.radius+8.0*rightSide, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, sideColor);
+                        graphArc(g2, a.center.x, a.center.y, a.radius+8.0*rightSide, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, !a.clockwise, sideColor);
                     }
                     // path of left side of robot
                     rightSide = (a.endAngle>a.startAngle) ? -1.0 : 1.0;
                     sideColor = darkGreen;
                     if (sideColor != null) {
-                        graphArc(g2, a.center.x, a.center.y, a.radius+8.0*rightSide, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, sideColor);
+                        graphArc(g2, a.center.x, a.center.y, a.radius+8.0*rightSide, a.startAngle*180/Math.PI, a.endAngle*180/Math.PI, !a.clockwise, sideColor);
                     }
                 }
             }
@@ -455,6 +496,127 @@ public class DrawField extends JPanel {
         
     }
     
+    /**
+     * Draw grid overlay of tile and tile mesh onto field
+     */
+    public void drawGrid(Graphics g, Graphics2D g2) {
+        double ii;
+        double x;
+        double y;
+        double ymin = Math.max(gf.FIELD_ORIGIN_Y, 0.0);
+        double ymax = Math.min(FIELD_WIDTH, gf.FIELD_ORIGIN_Y+gf.FIELD_WIDTH_Y);
+        double xmin = Math.max(gf.FIELD_ORIGIN_X, 0.0);
+        double xmax = Math.min(FIELD_WIDTH, gf.FIELD_ORIGIN_X+gf.FIELD_WIDTH_X);
+        g2.setStroke(new BasicStroke(1));
+        for (int i = 1; i < 6; i++) {
+            ii = (double) i;
+            x = ii*INNER_TILE_WIDTH+(ii-1)*MESH_TILE_WIDTH;
+            if ((x >= gf.FIELD_ORIGIN_X) && (x <= (gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X))) {
+                graphLine(g, x, ymin, x, ymax, darkGreen);
+            }
+            x = ii*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
+            if ((x >= gf.FIELD_ORIGIN_X) && (x <= (gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X))) {
+                graphLine(g, x, ymin, x, ymax, darkGreen);
+            }
+                
+            y = ii*INNER_TILE_WIDTH+(ii-1)*MESH_TILE_WIDTH; 
+            if ((y >= gf.FIELD_ORIGIN_Y) && (y <= (gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y))) {
+                graphLine(g, xmin, y, xmax, y, darkGreen);
+            }
+            y = ii*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
+            if ((y >= gf.FIELD_ORIGIN_Y) && (y <= (gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y))) {
+                graphLine(g, xmin, y, xmax, y, darkGreen);
+            }
+        }
+            
+        g2.setColor(darkGreen);
+                
+        // Getting vertical text is tricky. The component coordinate system need to be rotated
+        // and the x,y to place the text is also rotated! So beware when editing this!!
+        // X-axis text
+        AffineTransform at = g2.getTransform();
+        AffineTransform rt = new AffineTransform();
+        rt.rotate(-Math.PI/2.0);
+        g2.setTransform(rt);
+        double xx;
+        for (int i = 0; i < 7; i++) {
+            if (i > 0) {
+                xx = i*INNER_TILE_WIDTH+(i-1)*MESH_TILE_WIDTH;
+                if ((xx >= gf.FIELD_ORIGIN_X) && (xx <= gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X)) {
+                    g2.drawString(String.format("%.2f", xx), 0-FIELD_PIXEL_SIZE_Y-BORDER+2, toGraphX(xx-1.0));
+                }
+            }
+            if (i < 7) {
+                xx = i*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
+                if ((xx >= gf.FIELD_ORIGIN_X) && (xx <= gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X)) {
+                    g2.drawString(String.format("%.2f", xx), 0-FIELD_PIXEL_SIZE_Y-BORDER+2, toGraphX(xx+3.0));
+                }
+            }
+        }                
+        g2.setTransform(at);
+
+        // Y-axis text                
+        double yy;
+        for (int i = 0; i < 7; i++) {
+            if (i > 0) {
+                yy = i*INNER_TILE_WIDTH+(i-1)*MESH_TILE_WIDTH;
+                if ((yy >= gf.FIELD_ORIGIN_Y) && (yy <= gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y)) {
+                    g2.drawString(String.format("%.2f", yy), BORDER+2, toGraphY(yy-3.0));
+                }
+            }
+            if (i < 7) {
+                yy = i*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
+                if ((yy >= gf.FIELD_ORIGIN_Y) && (yy <= gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y)) {
+                    g2.drawString(String.format("%.2f", yy), BORDER+2, toGraphY(yy+1.0));
+                }
+            }
+        }
+    }
+    
+    
+    
+    /**
+     * Overlay compass onto game field panel.
+     */
+    public void drawCompass(Graphics g, Graphics2D g2) {
+        g2.setStroke(new BasicStroke(4));
+        // infilled circle in middle of field
+        double x = (gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X)/2.0;
+        double y = (gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y)/2.0;
+        double size = 5.0;
+        double ispoke = size*1.0;
+        double ospoke = size*2.0;
+        graphCircle(g, x, y, size*2, purple, true);     
+        // long spokes along x,y axes
+        graphLine(g, x+ispoke, y, x+ospoke, y, purple);
+        graphLine(g, x-ispoke, y, x-ospoke, y, purple);
+        graphLine(g, x, y+ispoke, x, y+ospoke, purple);
+        graphLine(g, x, y-ispoke, x, y-ospoke, purple);
+        // short spokes at 45 degrees to axes
+        g2.setStroke(new BasicStroke(2));
+        double ispike = ispoke * 0.707;
+        double ospike = ispike * 1.5;
+        graphLine(g, x+ispike, y+ispike, x+ospike, y+ospike, purple);
+        graphLine(g, x+ispike, y-ispike, x+ospike, y-ospike, purple);
+        graphLine(g, x-ispike, y+ispike, x-ospike, y+ospike, purple);
+        graphLine(g, x-ispike, y-ispike, x-ospike, y-ospike, purple);
+        // write text in degrees along spokes, spikes
+        g2.setStroke(new BasicStroke(1));
+        g2.setColor(purple);
+        g2.drawString("0  ", toGraphX(x+size*2.3), toGraphY(y-size*0.2));
+        g2.drawString(" 90", toGraphX(x-size*0.5), toGraphY(y+size*2.4));
+        g2.drawString("180", toGraphX(x-size*3.2), toGraphY(y-size*0.2));
+        g2.drawString("270", toGraphX(x-size*0.5), toGraphY(y-size*2.7));
+        g2.drawString("45 ", toGraphX(x+size*1.2), toGraphY(y+size*1.5));
+        g2.drawString("135", toGraphX(x-size*2.0), toGraphY(y+size*1.5));
+        g2.drawString("225", toGraphX(x-size*2.0), toGraphY(y-size*1.7));
+        g2.drawString("315", toGraphX(x+size*1.2), toGraphY(y-size*1.7));
+    }
+    
+    /**
+     * Method to paint the field panel of the Game Field frame.
+     * This is called automagically on Jframe.repaint() of Game Field frame.
+     */
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -469,8 +631,8 @@ public class DrawField extends JPanel {
         // draw field markings
         drawFieldGraphics(g, g2);
 
-        g2.setStroke(new BasicStroke(3));
         // draw Nav Path and Length
+        g2.setStroke(new BasicStroke(3));
         drawNavPath(g, g2);
             
         // draw robot-stop overlays
@@ -493,7 +655,26 @@ public class DrawField extends JPanel {
                 color = npt.stop ? Color.red : Color.black;
                 graphCircle(g, npt.pt.x, npt.pt.y, 2.0, color, true);     
                 graphAntiCenteredText(g2, npt.pt.x, npt.pt.y, Integer.toString(i), color);
+                // add headings, if necessary
+                if (gf.showHeadings) {
+                    graphLine(g, npt.pt.x, npt.pt.y, npt.pt.x+Math.cos(npt.heading)*2.0, npt.pt.y+Math.sin(npt.heading)*2.0, color);
+                }                
                 i = i+1;
+            }
+            // add highlight of NavPoint selected in JTable
+            int row = gf.nptTable.getSelectedRow();
+            if (row >= 0) {                
+                System.out.println("row:"+row);
+                try {
+                    g2.setStroke(new BasicStroke(2));
+                    System.out.println(" "+gf.nptTable.getModel().getValueAt(row,1));
+                    double x = Double.parseDouble(gf.nptTable.getModel().getValueAt(row,1).toString());
+                    double y = Double.parseDouble(gf.nptTable.getModel().getValueAt(row,2).toString());
+                    System.out.println("Highlight x:"+x+" y:"+y);
+                    graphCircle(g, x, y, 1.5, Color.white, true);
+                    graphCircle(g, x, y, 3.0, Color.white, false);
+                    g2.setStroke(new BasicStroke(3));
+                } catch (NullPointerException e) {}
             }
         }
         // draw waypoint overlays, if necessary
@@ -503,83 +684,22 @@ public class DrawField extends JPanel {
                 color = npt.stop ? Color.red : Color.black;
                 graphCircle(g, npt.pt.x, npt.pt.y, 2.0, color, true);
                 graphAntiCenteredText(g2, npt.pt.x, npt.pt.y, Integer.toString(i), color);
+                // add headings, if necessary
+                if (gf.showHeadings) {
+                    graphLine(g, npt.pt.x, npt.pt.y, npt.pt.x+Math.cos(npt.heading)*2.0, npt.pt.y+Math.sin(npt.heading)*2.0, color);
+                }
                 i = i+1;
             }
         }
                     
         // draw grid overlay, if necessary
-        double ii;
-        double x;
-        double y;
-        double ymin = Math.max(gf.FIELD_ORIGIN_Y, 0.0);
-        double ymax = Math.min(FIELD_WIDTH, gf.FIELD_ORIGIN_Y+gf.FIELD_WIDTH_Y);
-        double xmin = Math.max(gf.FIELD_ORIGIN_X, 0.0);
-        double xmax = Math.min(FIELD_WIDTH, gf.FIELD_ORIGIN_X+gf.FIELD_WIDTH_X);
         if (gf.showGrid) {
-            g2.setStroke(new BasicStroke(1));
-            for (int i = 1; i < 6; i++) {
-                ii = (double) i;
-                x = ii*INNER_TILE_WIDTH+(ii-1)*MESH_TILE_WIDTH;
-                if ((x >= gf.FIELD_ORIGIN_X) && (x <= (gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X))) {
-                    graphLine(g, x, ymin, x, ymax, darkGreen);
-                }
-                x = ii*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
-                if ((x >= gf.FIELD_ORIGIN_X) && (x <= (gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X))) {
-                    graphLine(g, x, ymin, x, ymax, darkGreen);
-                }
-                    
-                y = ii*INNER_TILE_WIDTH+(ii-1)*MESH_TILE_WIDTH; 
-                if ((y >= gf.FIELD_ORIGIN_Y) && (y <= (gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y))) {
-                    graphLine(g, xmin, y, xmax, y, darkGreen);
-                }
-                y = ii*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
-                if ((y >= gf.FIELD_ORIGIN_Y) && (y <= (gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y))) {
-                    graphLine(g, xmin, y, xmax, y, darkGreen);
-                }
-            }
-            
-            g2.setColor(darkGreen);
-                
-            // Getting vertical text is tricky. The component coordinate system need to be rotated
-            // and the x,y to place the text is also rotated! So beware when editing this!!
-            // X-axis text
-            AffineTransform at = g2.getTransform();
-            AffineTransform rt = new AffineTransform();
-            rt.rotate(-Math.PI/2.0);
-            g2.setTransform(rt);
-            double xx;
-            for (int i = 0; i < 7; i++) {
-                if (i > 0) {
-                    xx = i*INNER_TILE_WIDTH+(i-1)*MESH_TILE_WIDTH;
-                    if ((xx >= gf.FIELD_ORIGIN_X) && (xx <= gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X)) {
-                        g2.drawString(String.format("%.2f", xx), 0-FIELD_PIXEL_SIZE_Y-BORDER+2, toGraphX(xx-1.0));
-                    }
-                }
-                if (i < 7) {
-                    xx = i*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
-                    if ((xx >= gf.FIELD_ORIGIN_X) && (xx <= gf.FIELD_ORIGIN_X + gf.FIELD_WIDTH_X)) {
-                        g2.drawString(String.format("%.2f", xx), 0-FIELD_PIXEL_SIZE_Y-BORDER+2, toGraphX(xx+3.0));
-                    }
-                }
-            }                
-            g2.setTransform(at);
-
-            // Y-axis text                
-            double yy;
-            for (int i = 0; i < 7; i++) {
-                if (i > 0) {
-                    yy = i*INNER_TILE_WIDTH+(i-1)*MESH_TILE_WIDTH;
-                    if ((yy >= gf.FIELD_ORIGIN_Y) && (yy <= gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y)) {
-                        g2.drawString(String.format("%.2f", yy), BORDER+2, toGraphY(yy-3.0));
-                    }
-                }
-                if (i < 7) {
-                    yy = i*(INNER_TILE_WIDTH+MESH_TILE_WIDTH);
-                    if ((yy >= gf.FIELD_ORIGIN_Y) && (yy <= gf.FIELD_ORIGIN_Y + gf.FIELD_WIDTH_Y)) {
-                        g2.drawString(String.format("%.2f", yy), BORDER+2, toGraphY(yy+1.0));
-                    }
-                }
-            }
+            drawGrid(g, g2);
+        }
+        
+        // draw compass, if necessary
+        if (gf.showCompass) {
+            drawCompass(g, g2);
         }
             
         // draw simulation result overlay, if necessary

@@ -12,13 +12,18 @@ public class Circle {
     double radius;      // Circle radius
     
     /**
-     * From two NavPoints, attempt to find a Circle that is tangent to the 
+     * From two NavPoints, attempt to find Circles that are tangent to the 
      * line of a starting NavPoint and is tangent to a target NavPoint.
+     *          / .  -- circle center with arc
+     *          |    -- vector from starting NavPoint
+     *          *
      * @param startPt - staring NavPoint
      * @param targPt  - ending NavPoint
      * return         - Circle that is tangent to ending NavPoint and lines of both NavPoints
      */
-    public static Circle findCircle(NavPoint startPt, NavPoint targPt) {
+    public static List<Circle> findCircles(NavPoint startPt, NavPoint targPt) {
+    
+        List<Circle> circlesList = new ArrayList<>();
     
         // The starting point, with a heading, defines a line
         // and also a perpendicular line
@@ -29,26 +34,44 @@ public class Circle {
         // and also a perpendicular line
         StdLine targLine = targPt.toStdLine();
         StdLine targNormalLine = StdLine.perpLineAtPoint(targLine, targPt);
-        
-        // The start line and target line intersect at a point
-        // Check if they are parallel
+                
+        // Check if they are start line and target lines are parallel
         Point intPt = StdLine.intersectionPoint(startLine, targLine);
         if (intPt == null) {
-            // debug            
-            //System.out.println("No circles. Start and end Navpoints are parallel.");
-            return null;
+        
+            // A semicircle solution exists
+            // Find intersection of starting line and line perpendicular to target line
+            Point pt = StdLine.intersectionPoint(startLine, targNormalLine);
+            // The semicircle center is the midpoint of the segment between the
+            // above intersection and the target point
+            Point semiCenter = new Point((targPt.pt.x + pt.x)/2.0, (targPt.pt.y + pt.y)/2.0);
+            Circle semiCircle = new Circle(semiCenter, Point.distance(semiCenter, targPt.pt));
+            circlesList.add(semiCircle);
+            return circlesList;
         }
         
+        // If the start line and target line are not parallel then a solution
+        // may be found by using the bisections of these lines.
+        // This will return two circles.
+        
+        // The start line and target line intersect at a point
         // The start line and target lines can be bisected by two more lines
         List<StdLine> bisectLines = StdLine.bisectionLine(startLine, targLine);
-
-        // The target line intersects the two bisector lines (unless parallel)
+            
+        // The target line intersects the two bisector lines (unless paralel)
         // These intersections would define the center of circle of curvature
         //System.out.println("  TN | b(0)");
         Point center0 = StdLine.intersectionPoint(targNormalLine, bisectLines.get(0));
         //System.out.println("  TN | b(1)");
         Point center1 = StdLine.intersectionPoint(targNormalLine, bisectLines.get(1));
         
+        Circle circle0 = new Circle(center0, Point.distance(center0, targPt.pt));
+        Circle circle1 = new Circle(center1, Point.distance(center1, targPt.pt));
+        
+        circlesList.add(circle0);
+        circlesList.add(circle1);
+        return circlesList;
+/*        
         // A segment can be defined from start point to target point
         Segment startToTargetVector = new Segment(startPt, targPt);
         
@@ -79,6 +102,7 @@ public class Circle {
             System.out.println("Error: No circles found.");
             return null;
         }
+*/        
     }
     
     /**

@@ -53,23 +53,37 @@ public class SimPath {
         List<NavPoint> navPoints = new ArrayList<>();
     
         // 3. Determine robot's pose at start of the path
-        // Create a NavPoint that represents the very beginning of path.
-        // Add this NavPoint to the List of recorded robot poses.
+        // check to make sure the path has path elements!
+        if (robotIntendedPath == null) {
+            System.out.println("Path is null, returning from SimPath");
+            return null;
+        }
+        else if (robotIntendedPath.size() == 0) {
+            System.out.println("Path has 0 elements, returning from SimPath");
+            return null;
+        }
         NavPath p = robotIntendedPath.get(0);
+        System.out.println("Initial path element:");
+        
         NavPoint npt = new NavPoint(p.i);
         if (p instanceof Gap) {
             Gap g = (Gap) p;
-            npt.heading = Point.radianAngle(p.i.pt, p.o.pt);
+            npt.heading = Point.radianAngle(g.i.pt, g.o.pt);
+            System.out.println(g.toString());
         }
         else if (p instanceof Vector) {
             Vector v = (Vector) p;
             npt.heading = v.heading;
+            System.out.println(v.toString(true));
         }
         else if (p instanceof Arc) {
             Arc a = (Arc) p;
             if (a.clockwise) { npt.heading = a.startAngle - Math.PI/2.0; }
             else             { npt.heading = a.startAngle + Math.PI/2.0; }
+            System.out.println(a.toString(true));
         }         
+        // Create a NavPoint that represents the very beginning of path.
+        // Add this NavPoint to the List of recorded robot poses.
         navPoints.add(npt);
         //
         // Use the initial NavPoint, plus the index 0 to refer to the first path element
@@ -106,7 +120,7 @@ public class SimPath {
             // 2. Calculate new pose of the robot, based on encoder readings
             pathPt = getRobotPose(pathPt);            
             // keep for debugging
-            //System.out.println(" pathPt: "+pathPt.toString());
+            System.out.println(" robot pathPt: "+pathPt.toString());
         
             // 3. Calculate which path element the robot is now following
             pathPt = traversePath(robotIntendedPath, pathPt);

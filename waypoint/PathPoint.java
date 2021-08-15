@@ -1,5 +1,7 @@
 package waypoint;  
 
+import java.util.Locale;
+
 /**
  * Class to hold a 2D point, direction and index into Navigation Path.
  */
@@ -12,7 +14,9 @@ public class PathPoint extends NavPoint {
      * Return a String with description of a given PathPoint.
      */
     public String toString() {
-        return pt.toString()+" heading: "+heading+ " index: "+index;
+        return String.format(Locale.US, "%s heading: %6.3f (%7.2f) index: %d",
+                pt.toString(),heading,heading*180.0/Math.PI,index);
+
     }
 
     /**

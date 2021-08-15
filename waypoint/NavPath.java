@@ -12,7 +12,7 @@ public abstract class NavPath {
     double  orientation;  // orientation of robot relative to heading in NavPoint i
     
     public String toString() {
-        return "  "+i.toString()+"  "+o.toString()+ " "+stop;
+        return " i:"+i.toString()+" o:"+o.toString()+ " "+stop;
     }
 
 }

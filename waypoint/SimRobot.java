@@ -1,5 +1,6 @@
 package waypoint;  
 
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -40,7 +41,7 @@ public class SimRobot {
      */
     public void moveRobot(double time, double leftPower, double rightPower) {    
         //keep for debugging
-        System.out.println("leftPower="+leftPower+" rightPower="+rightPower);
+        System.out.println(String.format(Locale.US, "leftPower=%7.4f rightPower=%7.4f",leftPower,rightPower));
         double deltaLeftEncoder  = time*leftPower*TICKS_PER_MS_PER_FULL_POWER *(1.0 + perturbation * (Math.random() - 0.5));
         double deltaRightEncoder = time*rightPower*TICKS_PER_MS_PER_FULL_POWER*(1.0 + perturbation * (Math.random() - 0.5));
         leftEncoder += deltaLeftEncoder;

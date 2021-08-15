@@ -32,6 +32,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -66,7 +68,7 @@ public class GameField extends JFrame {
                 
     private JFrame frame;
     private DefaultTableModel navpointTM;
-    private JTable nptTable;
+    protected JTable nptTable;   // queried by DrawField
     private JLabel lengthLabel;
     private JLabel timeLabel;
     private JButton navpointOverlayB;
@@ -92,14 +94,23 @@ public class GameField extends JFrame {
     protected Map<String, String> myRobot;
 
     // accessed by DrawField
-    protected boolean showRobotStops = false;
-    protected boolean showRobotTracks = false;
+    protected boolean showGrid = false;
     protected boolean showNavPoints = false;
     protected boolean showWaypoints = false;
-    protected boolean showGrid = false;
+    protected boolean showHeadings = false;
+    protected boolean showCompass = false;
     protected boolean showLength = false;
+    protected boolean showRobotStops = false;
+    protected boolean showRobotTracks = false;
     protected boolean showSim = false;
     protected boolean showSettingsFrame = false; // accessed by (SettingsFrame) mySettings
+    
+    protected List<Color> pathColors = new ArrayList<Color>() {{
+        add(Color.blue);
+        add(Color.cyan);
+        add(Color.lightGray);
+    }};
+    protected int pathColorIndex = 0;
     
     /**
      * Class constructor, creates gui of game field and controls to generate and simulate a robot path.
@@ -113,7 +124,7 @@ public class GameField extends JFrame {
         
         //--------------------------
         // JPanel for Game Field
-        //      Game Field panel
+        //      Game Field panel of class DrawField
         //
         // this must be declared before getFieldDimensions() is called
         fieldPanel = new DrawField(this);
@@ -234,7 +245,12 @@ public class GameField extends JFrame {
         nptTable.getModel().addTableModelListener( new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
                 setUpdateBColor();
+                frame.repaint();
             }});
+        nptTable.getSelectionModel().addListSelectionListener( new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                frame.repaint();
+            }});            
         // Create ScrollPane
         JScrollPane navpointSP = new JScrollPane(nptTable);
         navpointSP.setPreferredSize(new Dimension(FIELD_PANEL_SIZE,100));
@@ -247,7 +263,7 @@ public class GameField extends JFrame {
         //      Delete Row button
         //      Update Path button
         //      Length Label
-        //      Advanced Settings button
+        //      Show Path button
         //
         JPanel npEditPanel = new JPanel();
         npEditPanel.setLayout(new FlowLayout());
@@ -302,16 +318,16 @@ public class GameField extends JFrame {
             }
         });
         //
-        // JButton to show advanced settings
+        // JButton to show path
         //
-        settingsB = new JButton("Settings Frame");
-        settingsB.addActionListener(new ActionListener() {
+        JButton pathB = new JButton("");
+        pathB.setBackground(pathColors.get(pathColorIndex));
+        pathB.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showSettingsFrame = !showSettingsFrame;
-                mySettings.showSettingsFrame(showSettingsFrame);
-                settingsB.setBackground(showSettingsFrame ? Color.green : null);
-                frame.repaint();                
+                pathColorIndex = (pathColorIndex + 1) % pathColors.size();
+                pathB.setBackground(pathColors.get(pathColorIndex));
+                frame.repaint();
             }
         });
         //
@@ -319,7 +335,10 @@ public class GameField extends JFrame {
         npEditPanel.add(deleteNPB);
         npEditPanel.add(updateB);
         npEditPanel.add(lengthLabel);
-        npEditPanel.add(settingsB);
+        Dimension psize = new Dimension(25, 25);
+        pathB.setPreferredSize(psize);
+        npEditPanel.add(pathB);
+        npEditPanel.add(new JLabel("Path Color"));
         //
         controlsPanel.add(npEditPanel);
        
@@ -330,8 +349,10 @@ public class GameField extends JFrame {
         //      Grid Overlay button
         //      NavPoint Overlay button
         //      Waypoint Overlay button
+        //      Heading Overlay button
         //
         //      Label
+        //      Compass Overlay button
         //      Length Overlay button
         //      Robot Overlay button
         //      Robot Overlay button
@@ -384,6 +405,30 @@ public class GameField extends JFrame {
             }
         });
         //
+        // JButton to toggle Heading overlay
+        //
+        JButton headingsOverlayB = new JButton("Headings");
+        headingsOverlayB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showHeadings = !showHeadings;
+                headingsOverlayB.setBackground(showHeadings ? Color.green : null);
+                frame.repaint();
+            }
+        });
+        //
+        // JButton to toggle Compass overlay
+        //
+        JButton compassOverlayB = new JButton("Compass");
+        compassOverlayB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showCompass = !showCompass;
+                compassOverlayB.setBackground(showCompass ? Color.green : null);
+                frame.repaint();
+            }
+        });
+        //
         // JButton to toggle Length overlay
         //
         JButton lengthB = new JButton("Length");
@@ -425,7 +470,9 @@ public class GameField extends JFrame {
         gridOverlayB.setPreferredSize(osize);
         navpointOverlayB.setPreferredSize(osize);
         waypointOverlayB.setPreferredSize(osize);
+        headingsOverlayB.setPreferredSize(osize);
         overlay2Label.setPreferredSize(new Dimension(85, 25));
+        compassOverlayB.setPreferredSize(osize);
         lengthB.setPreferredSize(osize);
         robotStopsOverlayB.setPreferredSize(osize);
         robotTracksOverlayB.setPreferredSize(osize);
@@ -433,7 +480,9 @@ public class GameField extends JFrame {
         overlayPanel1.add(gridOverlayB);
         overlayPanel1.add(navpointOverlayB);
         overlayPanel1.add(waypointOverlayB);
+        overlayPanel1.add(headingsOverlayB);
         overlayPanel2.add(overlay2Label);
+        overlayPanel2.add(compassOverlayB);
         overlayPanel2.add(lengthB);
         overlayPanel2.add(robotStopsOverlayB);
         overlayPanel2.add(robotTracksOverlayB);
@@ -447,6 +496,7 @@ public class GameField extends JFrame {
         //      Run Simulation button
         //      Time Label button
         //      Simulation Overlay button
+        //      Advanced Settings button
         //
         JPanel simPanel = new JPanel();
         simPanel.setLayout(new FlowLayout());
@@ -480,6 +530,19 @@ public class GameField extends JFrame {
             }
         });
         //
+        // JButton to show advanced settings
+        //
+        settingsB = new JButton("Settings Frame");
+        settingsB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showSettingsFrame = !showSettingsFrame;
+                mySettings.showSettingsFrame(showSettingsFrame);
+                settingsB.setBackground(showSettingsFrame ? Color.green : null);
+                frame.repaint();                
+            }
+        });
+        //
         Dimension sbsize = new Dimension(180, 25);
         Dimension slsize = new Dimension(160, 25);
         lengthLabel.setPreferredSize(slsize);
@@ -490,6 +553,7 @@ public class GameField extends JFrame {
         simPanel.add(simB);
         simPanel.add(timeLabel);
         simPanel.add(showSimB);
+        simPanel.add(settingsB);
         //
         controlsPanel.add(simPanel);        
         
@@ -704,8 +768,8 @@ public class GameField extends JFrame {
         } catch (Exception e) {
             if (strongCheck) {
                 System.out.println("Problem in NavPoint Table!");
-                e.printStackTrace();
-                System.out.println(e);
+//                e.printStackTrace();
+//                System.out.println(e);
             }
             return null;
         }

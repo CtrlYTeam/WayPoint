@@ -1,5 +1,7 @@
 package waypoint;  
 
+import java.util.Locale;
+
 /**
  * Class to hold a 2D point and a direction.
  */
@@ -158,8 +160,10 @@ public class NavPoint {
      * Return a String with description of a given NavPoint.
      */
     public String toString() {
-        return pt.toString()+" heading: "+heading+" orientation: "+orientation+" stop: "+stop;
-    }
+        //return pt.toString()+" heading: "+heading+" orientation: "+orientation+" stop: "+stop;
+        return String.format(Locale.US, "%s heading: %6.3f (%7.2f) orientation: %6.3f stop: %s",
+                pt.toString(), heading, heading*180.0/Math.PI, orientation, stop);
+   }
     
     /**
      * Constructors with alternate arguments than primary constructor.

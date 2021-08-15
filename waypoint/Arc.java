@@ -1,5 +1,7 @@
 package waypoint;  
 
+import java.util.Locale;
+
 /**
  * Class to hold an arc.
  */
@@ -43,8 +45,9 @@ public class Arc extends NavPath {
     }
     
     /**
-     * Assuming arcs are always the smaller angle between two points on a circle,
-     * return the direction of the smaller angle from start-to-end as clockwise(true) or not.
+     * Assuming two points on a circle bisect the circle into two arcs,
+     * this arc is assumed to be the arc of lesser length of the bissected circle;
+     * return the direction of the lesser length arc from start-to-end as clockwise(true) or not.
      */
     public static boolean calcClockwise(double sa, double ea) {
         double aa = ea - sa;
@@ -81,7 +84,12 @@ public class Arc extends NavPath {
         return this.getClass().getSimpleName()+" "+super.toString();
     }        
     public String toString(boolean flag) {
-        if (flag) { return "Arc center: "+center.toString()+" radius: "+radius+" startAngle:"+startAngle+" endAngle:"+endAngle; }
+        if (flag) { 
+        //return "Arc center: "+center.toString()+" radius: "+radius+" startAngle:"+startAngle+" endAngle:"+endAngle+ "clockwise:"+clockwise; 
+            return String.format(Locale.US, "Arc center: %s radius: %6.2f startAngle: %6.3f (%7.2f), endingAngle: %6.3f (%7.2f), clockwise: %s",
+                    center.toString(),radius,startAngle,startAngle*180.0/Math.PI,endAngle,endAngle*180.0/Math.PI,clockwise);
+
+        }
         else      { return toString(); }
     }
      
@@ -128,4 +136,20 @@ public class Arc extends NavPath {
         this.i = new NavPoint(cx + r*Math.cos(i), cy + r*Math.sin(i), bearing);
         this.o = new NavPoint(cx + r*Math.cos(o), cy + r*Math.sin(o), bearing);
     }
+    
+    public Arc(double cx, double cy, double r, double i, double o, boolean c) {
+        this.stop = false;
+        this.center = new Point(cx, cy);
+        this.radius = r;
+        this.startAngle = i;
+        this.endAngle = o;
+        this.clockwise = c;
+        this.length = Arc.calcLength(this.clockwise, startAngle, endAngle, this.radius);
+        double bearing;
+        if (this.clockwise) { bearing = startAngle - Math.PI/2.0; }
+        else                { bearing = startAngle + Math.PI/2.0; }
+        this.i = new NavPoint(cx + r*Math.cos(i), cy + r*Math.sin(i), bearing);
+        this.o = new NavPoint(cx + r*Math.cos(o), cy + r*Math.sin(o), bearing);
+    }
+    
 }

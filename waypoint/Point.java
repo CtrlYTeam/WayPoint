@@ -1,5 +1,7 @@
 package waypoint;  
 
+import java.util.Locale;
+
 /**
  * Class to hold a 2D point.
  */
@@ -34,7 +36,8 @@ public class Point {
      * String of this Point's parameters
      */
     public String toString() {
-        return "("+x+","+y+")";
+        return String.format(Locale.US, "(%6.2f,%6.2f)",x,y);
+        //return "("+x+","+y+")";
     }
     
     /**

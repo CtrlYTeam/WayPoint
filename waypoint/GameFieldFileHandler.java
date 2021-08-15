@@ -328,6 +328,7 @@ public class GameFieldFileHandler {
     
         double x1, y1, x2, y2;
         double cx, cy, r, sa, ea;
+        boolean c;
     
         BufferedReader reader;
         try {
@@ -358,12 +359,13 @@ public class GameFieldFileHandler {
                             break;
                         
                         case "ARC":
-                            sa = Double.parseDouble(chunks[1])*180/Math.PI;
-                            ea = Double.parseDouble(chunks[2])*180/Math.PI;
+                            sa = Double.parseDouble(chunks[1]);  // starting angle in radians
+                            ea = Double.parseDouble(chunks[2]);  // ending angle in radians
                             cx = Double.parseDouble(chunks[3]);
                             cy = Double.parseDouble(chunks[4]);
                             r  = Double.parseDouble(chunks[5]);
-                            myPath.add(new Arc(cx, cy, r, sa, ea));
+                            c  = Boolean.parseBoolean(chunks[6]); // clockwise
+                            myPath.add(new Arc(cx, cy, r, sa, ea, c));
                             break;
                                         
                         case "GAP":
@@ -430,7 +432,7 @@ public class GameFieldFileHandler {
             writer.write("// GAP (double)x1 (double)y1 (double)x2 (double)y2 (double)orientation\n");
             writer.write("// VECTOR (double)x1 (double)y1 (double)x2 (double)y2 (double)orientation\n");
             writer.write("// ARC (double)startingAngle (double)endingAngle (double)x (double)y \\\n");
-            writer.write("//     (double)radius (double)orientation\n");
+            writer.write("//     (double)radius (double)orientation (boolean)clockwise\n");
             writer.write("//\n");
             
             if (path != null) {
@@ -440,7 +442,7 @@ public class GameFieldFileHandler {
                     }
                     else if (p instanceof Arc) {
                         Arc q = (Arc) p;
-                        writer.write("ARC\t"+q.startAngle+"\t"+q.endAngle+"\t"+q.center.x+"\t"+q.center.y+"\t"+q.radius+"\t"+q.orientation+"\n");
+                        writer.write("ARC\t"+q.startAngle+"\t"+q.endAngle+"\t"+q.center.x+"\t"+q.center.y+"\t"+q.radius+"\t"+q.orientation+"\t"+q.clockwise+"\n");
                     }
                     else if (p instanceof Gap) {
                         writer.write("GAP\t"+p.i.pt.x+"\t"+p.i.pt.y+"\t"+p.o.pt.x+"\t"+p.o.pt.y+"\t"+p.orientation+"\n");
